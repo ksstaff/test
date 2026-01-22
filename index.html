@@ -1,0 +1,724 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>등촌샤브칼국수 x KT | 프랜차이즈 혁신 솔루션</title>
+    <meta name="description" content="등촌샤브칼국수와 KT가 만났습니다. 하이오더, 서빙로봇 등 최첨단 프랜차이즈 전용 상품을 만나보세요.">
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            background: #E12114;
+            color: white;
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+        }
+        .admin-sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ktRed: '#E12114',
+                        ktDark: '#333333',
+                    }
+                }
+            }
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body class="bg-white text-gray-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // --- INITIAL DATA ---
+        const INITIAL_SETTINGS = {
+            heroTitle: "등촌샤브칼국수 x KT",
+            heroSubtitle: "전국 300여 개 매장의 성공 파트너, KT 프랜차이즈 전용 솔루션과 함께합니다.",
+            heroImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=2070",
+            brandPrimary: "#E12114",
+            announcement: "등촌샤브칼국수 가맹점 대상 KT 하이오더 특별 프로모션 진행 중! 지금 상담 신청하고 혜택을 받으세요.",
+            webhookUrl: "",
+            buttonLabels: {
+                navConsultation: "상담 신청",
+                heroConsultation: "전문 상담 예약하기",
+                heroSolutions: "솔루션 상세보기",
+                submitConsultation: "상담 예약 신청하기"
+            },
+            footer: {
+                description: "본 웹사이트는 등촌샤브칼국수 가맹 본부와 KT의 전략적 파트너십을 기반으로 운영되는 공식 프랜차이즈 지원 사이트입니다.",
+                supportPhone: "1588-0000",
+                hqPhone: "1577-0000",
+                faultPhone: "100"
+            }
+        };
+
+        const INITIAL_PRODUCTS = [
+            { id: '1', name: 'KT 하이오더', description: '테이블 주문 시스템으로 인력 효율화와 고객 만족도를 동시에 잡습니다.', image: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c02?auto=format&fit=crop&q=80&w=800', icon: 'fa-solid fa-tablet-screen-button', linkUrl: '#consultation' },
+            { id: '2', name: 'KT 서빙로봇', description: '최첨단 자율주행 기술로 매장의 품격을 높이고 운영을 스마트하게 만듭니다.', image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=800', icon: 'fa-solid fa-robot', linkUrl: '#consultation' },
+            { id: '3', name: 'KT AI CCTV', description: '매장 보안은 기본, 지능형 분석으로 고객 동선과 방문 통계까지 한눈에 확인하세요.', image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&q=80&w=800', icon: 'fa-solid fa-video', linkUrl: '#consultation' },
+            { id: '4', name: 'KT 기가 와이파이', description: '끊김 없는 안정적인 초고속 인터넷으로 완벽한 매장 인프라를 구축합니다.', image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=800', icon: 'fa-solid fa-wifi', linkUrl: '#consultation' }
+        ];
+
+        const INITIAL_NEWS = [
+            { id: '1', title: '등촌샤브칼국수 본사 - KT 업무 협약 체결', content: '디지털 전환(DX) 가속화를 위한 상호 협력 체계를 구축하고 전국 가맹점에 최첨단 기술을 보급하기로 하였습니다.', date: '2024-05-15', imageUrl: 'https://picsum.photos/800/600?random=10' },
+            { id: '2', title: 'KT 하이오더 도입 매장 인건비 절감 리포트', content: '수도권 주요 매장 도입 결과, 서빙 효율이 30% 이상 향상되었으며 고객 만족도가 크게 개선되었습니다.', date: '2024-05-10', imageUrl: 'https://picsum.photos/800/600?random=11' }
+        ];
+
+        // --- COMPONENTS ---
+
+        const SuccessModal = ({ onClose }) => (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center animate-in zoom-in duration-300">
+                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                        <i className="fa-solid fa-check"></i>
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 mb-4">상담이 접수되었습니다</h2>
+                    <p className="text-gray-500 leading-relaxed mb-8">
+                        프랜차이즈 담당자를 통해서<br />빠르게 연락드리겠습니다.
+                    </p>
+                    <button 
+                        onClick={onClose}
+                        className="w-full py-4 bg-ktRed text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg active:scale-95"
+                    >
+                        확인
+                    </button>
+                </div>
+            </div>
+        );
+
+        const Navbar = ({ settings, onAdminClick }) => {
+            const handleLogoClick = (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            return (
+                <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-20">
+                            <a href="#" onClick={handleLogoClick} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                                <div className="text-ktRed font-black text-2xl tracking-tighter">등촌샤브<span className="text-ktDark">칼국수</span></div>
+                                <div className="h-6 w-px bg-gray-300 mx-2"></div>
+                                <div className="text-ktRed font-bold text-xl italic">KT</div>
+                            </a>
+                            <div className="hidden md:flex items-center space-x-8 text-sm font-semibold text-gray-700">
+                                <a href="#products" className="hover:text-ktRed transition-colors">솔루션 안내</a>
+                                <a href="#news" className="hover:text-ktRed transition-colors">공지사항</a>
+                                <a href="#consultation" className="bg-ktRed text-white px-5 py-2.5 rounded-full hover:bg-red-700 transition-all shadow-md active:scale-95">
+                                    {settings.buttonLabels.navConsultation}
+                                </a>
+                                <button onClick={onAdminClick} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i className="fa-solid fa-gear"></i>
+                                </button>
+                            </div>
+                            <div className="md:hidden flex items-center gap-4">
+                                <a href="#consultation" className="bg-ktRed text-white px-3 py-1.5 rounded-full text-xs font-bold">{settings.buttonLabels.navConsultation}</a>
+                                <button onClick={onAdminClick} className="text-gray-500 p-2"><i className="fa-solid fa-bars text-xl"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        const Hero = ({ settings }) => (
+            <section className="relative h-[600px] flex items-center overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img src={settings.heroImageUrl} className="w-full h-full object-cover brightness-[0.4]" alt="hero" />
+                </div>
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+                    <div className="max-w-2xl">
+                        <div className="inline-block bg-ktRed text-xs font-bold px-3 py-1 rounded mb-6 tracking-widest uppercase">Official Partnership</div>
+                        <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">{settings.heroTitle}</h1>
+                        <p className="text-xl md:text-2xl font-light text-gray-200 mb-10 leading-relaxed">{settings.heroSubtitle}</p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <a href="#consultation" className="px-8 py-4 bg-ktRed text-white text-lg font-bold rounded-lg text-center hover:bg-red-700 transition-all shadow-lg hover:-translate-y-1">{settings.buttonLabels.heroConsultation}</a>
+                            <a href="#products" className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 text-white text-lg font-bold rounded-lg text-center hover:bg-white/20 transition-all">{settings.buttonLabels.heroSolutions}</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const ProductSection = ({ products }) => (
+            <section id="products" className="py-24 bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-ktRed font-bold text-lg mb-2 tracking-widest uppercase">Smart Solutions</h2>
+                        <p className="text-4xl font-black text-gray-900 mb-4">KT 프랜차이즈 전용 상품</p>
+                        <div className="w-12 h-1 bg-ktRed mx-auto"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {products.map(p => (
+                            <div key={p.id} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col h-full">
+                                <div className="relative h-48 overflow-hidden">
+                                    <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    <div className="absolute top-4 left-4 bg-ktRed text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg">
+                                        <i className={p.icon}></i>
+                                    </div>
+                                </div>
+                                <div className="p-6 flex-grow flex flex-col">
+                                    <h3 className="text-xl font-bold mb-3 text-gray-900">{p.name}</h3>
+                                    <p className="text-gray-500 text-sm leading-relaxed mb-6 flex-grow">{p.description}</p>
+                                    <a href={p.linkUrl} className="w-full py-3 bg-gray-50 text-gray-700 font-semibold rounded-lg group-hover:bg-ktRed group-hover:text-white transition-colors flex items-center justify-center gap-2">
+                                        자세히 보기 <i className="fa-solid fa-arrow-right text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const NewsSection = ({ news }) => (
+            <section id="news" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-end mb-12">
+                        <div>
+                            <h2 className="text-ktRed font-bold text-lg mb-2 tracking-widest uppercase">Latest Updates</h2>
+                            <p className="text-4xl font-black text-gray-900">최신 소식 및 공지</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {news.map(n => (
+                            <div key={n.id} className="flex flex-col md:flex-row bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-ktRed/30 transition-colors shadow-sm">
+                                <div className="md:w-1/3 h-48 md:h-auto overflow-hidden">
+                                    <img src={n.imageUrl} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="p-6 md:w-2/3 flex flex-col justify-between">
+                                    <div>
+                                        <span className="text-xs text-ktRed font-bold mb-2 block">{n.date}</span>
+                                        <h3 className="text-lg font-bold mb-2 line-clamp-2">{n.title}</h3>
+                                        <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{n.content}</p>
+                                    </div>
+                                    <button className="mt-4 text-gray-900 font-bold text-sm hover:text-ktRed inline-flex items-center gap-1 self-start">
+                                        상세보기 <i className="fa-solid fa-chevron-right text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const ConsultationForm = ({ settings, onSubmit }) => {
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [formData, setFormData] = useState({ storeName: '', customerName: '', phoneNumber: '', interests: [], consent: false });
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!formData.consent) return alert('개인정보 수집 동의가 필요합니다.');
+                if (formData.interests.length === 0) return alert('관심 상품을 최소 하나 이상 선택해주세요.');
+                setIsSubmitting(true);
+                await onSubmit(formData);
+                setFormData({ storeName: '', customerName: '', phoneNumber: '', interests: [], consent: false });
+                setIsSubmitting(false);
+            };
+
+            const toggleInterest = (i) => {
+                setFormData(p => ({ 
+                    ...p, 
+                    interests: p.interests.includes(i) ? p.interests.filter(x => x !== i) : [...p.interests, i] 
+                }));
+            };
+
+            return (
+                <section id="consultation" className="py-24 bg-gray-50">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 grid grid-cols-1 md:grid-cols-2">
+                            <div className="bg-ktRed p-12 text-white flex flex-col justify-between">
+                                <div>
+                                    <h2 className="text-3xl font-black mb-6">전문 상담 신청</h2>
+                                    <p className="text-lg text-white/80 leading-relaxed mb-8">
+                                        등촌샤브칼국수 가맹점만을 위한 특별한 혜택.<br/>KT 전문 매니저가 직접 찾아가서 가장 효율적인 솔루션을 설계해 드립니다.
+                                    </p>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <i className="fa-solid fa-phone"></i> 
+                                        <span className="font-bold">솔루션 상담: {settings.footer.supportPhone}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <i className="fa-solid fa-clock"></i> 
+                                        <span>운영시간: 평일 09:00 - 18:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <form onSubmit={handleSubmit} className="p-12 space-y-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">매장 정보</label>
+                                    <input type="text" required placeholder="등촌샤브칼국수 OOO점" value={formData.storeName} onChange={e => setFormData({...formData, storeName: e.target.value})} className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-ktRed/20" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">성함</label>
+                                        <input type="text" required placeholder="홍길동" value={formData.customerName} onChange={e => setFormData({...formData, customerName: e.target.value})} className="w-full p-3 border rounded-lg outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">연락처</label>
+                                        <input type="tel" required placeholder="010-0000-0000" value={formData.phoneNumber} onChange={e => setFormData({...formData, phoneNumber: e.target.value})} className="w-full p-3 border rounded-lg outline-none" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-4">관심 상품 선택</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['하이오더', '서빙로봇', 'CCTV', '인터넷'].map(i => (
+                                            <button key={i} type="button" onClick={() => toggleInterest(i)} className={`p-2.5 border rounded-lg text-sm font-semibold transition-all ${formData.interests.includes(i) ? 'bg-ktRed border-ktRed text-white shadow-md' : 'bg-white text-gray-600 hover:border-ktRed'}`}>{i}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t">
+                                    <label className="flex items-start gap-2 text-xs text-gray-500 cursor-pointer group">
+                                        <input type="checkbox" required checked={formData.consent} onChange={e => setFormData({...formData, consent: e.target.checked})} className="mt-0.5" /> 
+                                        <span className="group-hover:text-gray-700 transition-colors">개인정보 수집 및 이용 동의 (필수)</span>
+                                    </label>
+                                </div>
+                                <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-gray-900 text-white font-black text-lg rounded-xl hover:bg-black transition-all shadow-xl active:scale-95 disabled:opacity-50">
+                                    {isSubmitting ? '신청 처리 중...' : settings.buttonLabels.submitConsultation}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = ({ settings }) => (
+            <footer className="bg-gray-900 text-gray-400 py-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                        <div className="col-span-1 md:col-span-2">
+                            <div className="text-white font-black text-2xl tracking-tighter mb-6">
+                                등촌샤브<span className="text-white/60">칼국수</span> <span className="text-ktRed">x KT</span>
+                            </div>
+                            <p className="text-sm leading-relaxed max-w-md">{settings.footer.description}</p>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-bold mb-6">고객센터 안내</h4>
+                            <ul className="text-sm space-y-4">
+                                <li>KT 프랜차이즈 전담: <span className="text-white font-bold">{settings.footer.supportPhone}</span></li>
+                                <li>등촌샤브 가맹 본부: <span className="text-white font-bold">{settings.footer.hqPhone}</span></li>
+                                <li>고장/장애 접수: <span className="text-white font-bold">국번없이 {settings.footer.faultPhone}</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px]">
+                        <p>© 2024 KT & Deungchon Shabu-Kalguksu Corp. All Rights Reserved.</p>
+                        <div className="flex gap-6 text-lg">
+                            <i className="fa-brands fa-instagram hover:text-white cursor-pointer"></i>
+                            <i className="fa-brands fa-youtube hover:text-white cursor-pointer"></i>
+                            <i className="fa-brands fa-facebook hover:text-white cursor-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        // --- ADMIN PANEL ---
+        const AdminPanel = ({ settings, setSettings, news, setNews, products, setProducts, consultations, onLogout }) => {
+            const [tab, setTab] = useState('content');
+            const [editNews, setEditNews] = useState(null);
+            const [editProd, setEditProd] = useState(null);
+
+            const handleFile = (e, cb) => {
+                const f = e.target.files[0];
+                if (f) { const r = new FileReader(); r.onload = () => cb(r.result); r.readAsDataURL(f); }
+            };
+
+            const TABS = [
+                { id: 'content', label: '기본 설정', icon: 'fa-sliders' },
+                { id: 'news', label: '뉴스 관리', icon: 'fa-newspaper' },
+                { id: 'products', label: '상품 관리', icon: 'fa-box' },
+                { id: 'buttons', label: '버튼 문구', icon: 'fa-i-cursor' },
+                { id: 'footer', label: '푸터 관리', icon: 'fa-window-maximize' },
+                { id: 'consultations', label: '상담 내역', icon: 'fa-clipboard-list' },
+                { id: 'integration', label: '구글 연동', icon: 'fa-link' }
+            ];
+
+            return (
+                <div className="min-h-screen bg-gray-100 flex">
+                    <aside className="w-64 bg-gray-900 text-white flex flex-col admin-sidebar">
+                        <div className="p-8 border-b border-white/10">
+                            <div className="text-xl font-black italic text-ktRed">KT ADMIN</div>
+                        </div>
+                        <nav className="p-4 space-y-1 flex-grow overflow-y-auto">
+                            {TABS.map(t => (
+                                <button key={t.id} onClick={() => setTab(t.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${tab === t.id ? 'bg-ktRed text-white shadow-lg' : 'hover:bg-white/5 text-gray-400'}`}>
+                                    <i className={`fa-solid ${t.icon} w-5`}></i> {t.label}
+                                </button>
+                            ))}
+                        </nav>
+                        <div className="p-4 border-t border-white/10">
+                            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-gray-400 transition-colors">
+                                <i className="fa-solid fa-arrow-right-from-bracket"></i> 로그아웃
+                            </button>
+                        </div>
+                    </aside>
+
+                    <main className="flex-grow p-10 overflow-y-auto">
+                        <header className="mb-10">
+                            <h1 className="text-3xl font-black text-gray-900">{TABS.find(t=>t.id===tab).label}</h1>
+                        </header>
+                        
+                        {tab === 'content' && (
+                            <div className="bg-white p-8 rounded-2xl border shadow-sm space-y-8 max-w-4xl">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase">상단 띠배너 공지</label>
+                                        <textarea rows={3} value={settings.announcement} onChange={e => setSettings({...settings, announcement: e.target.value})} className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-ktRed/20" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase">히어로 메인 제목</label>
+                                        <input type="text" value={settings.heroTitle} onChange={e => setSettings({...settings, heroTitle: e.target.value})} className="w-full p-3 border rounded-lg" />
+                                        <label className="block text-xs font-bold text-gray-400 uppercase pt-2">히어로 배경 이미지</label>
+                                        <input type="file" onChange={e => handleFile(e, u => setSettings({...settings, heroImageUrl: u}))} className="text-xs" />
+                                    </div>
+                                </div>
+                                <button onClick={() => alert('설정이 임시 저장되었습니다.')} className="bg-ktRed text-white px-8 py-3 rounded font-bold shadow-lg">전체 저장</button>
+                            </div>
+                        )}
+
+                        {tab === 'news' && (
+                            <div className="space-y-6">
+                                <button onClick={() => setEditNews({})} className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2"><i className="fa-solid fa-plus"></i> 신규 뉴스 추가</button>
+                                <div className="bg-white rounded-2xl border divide-y overflow-hidden shadow-sm">
+                                    {news.map(n => (
+                                        <div key={n.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-center gap-6">
+                                                <img src={n.imageUrl} className="w-16 h-16 object-cover rounded-lg border shadow-sm" /> 
+                                                <div>
+                                                    <div className="font-bold text-lg">{n.title}</div>
+                                                    <div className="text-xs text-gray-400 font-mono">{n.date}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-4">
+                                                <button onClick={() => setEditNews(n)} className="text-blue-500 font-bold hover:underline">수정</button>
+                                                <button onClick={() => confirm('삭제하시겠습니까?') && setNews(news.filter(x => x.id !== n.id))} className="text-red-500 font-bold hover:underline">삭제</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'products' && (
+                            <div className="space-y-6">
+                                <button onClick={() => setEditProd({})} className="bg-gray-900 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2"><i className="fa-solid fa-plus"></i> 상품 추가</button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {products.map(p => (
+                                        <div key={p.id} className="bg-white p-6 border rounded-2xl flex justify-between shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex gap-4">
+                                                <img src={p.image} className="w-20 h-20 object-cover rounded-xl border" /> 
+                                                <div>
+                                                    <div className="font-bold text-xl">{p.name}</div>
+                                                    <div className="text-xs text-blue-500 font-mono truncate max-w-[150px]">{p.linkUrl}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <button onClick={() => setEditProd(p)} className="p-2 text-gray-400 hover:text-ktRed"><i className="fa-solid fa-pen-to-square"></i></button>
+                                                <button onClick={() => confirm('삭제?') && setProducts(products.filter(x => x.id !== p.id))} className="p-2 text-gray-400 hover:text-red-500"><i className="fa-solid fa-trash"></i></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'buttons' && (
+                            <div className="bg-white p-8 rounded-2xl border shadow-sm space-y-6 max-w-2xl">
+                                {Object.keys(settings.buttonLabels).map(key => (
+                                    <div key={key}>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{key}</label>
+                                        <input type="text" value={settings.buttonLabels[key]} onChange={e => setSettings({...settings, buttonLabels: {...settings.buttonLabels, [key]: e.target.value}})} className="w-full p-3 border rounded-lg" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {tab === 'footer' && (
+                            <div className="bg-white p-8 rounded-2xl border shadow-sm space-y-6 max-w-2xl">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">하단 설명 문구</label>
+                                    <textarea rows={4} value={settings.footer.description} onChange={e => setSettings({...settings, footer: {...settings.footer, description: e.target.value}})} className="w-full p-3 border rounded-lg" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div><label className="text-xs font-bold text-gray-400">상담번호</label><input type="text" value={settings.footer.supportPhone} onChange={e => setSettings({...settings, footer: {...settings.footer, supportPhone: e.target.value}})} className="w-full p-2 border" /></div>
+                                    <div><label className="text-xs font-bold text-gray-400">본부번호</label><input type="text" value={settings.footer.hqPhone} onChange={e => setSettings({...settings, footer: {...settings.footer, hqPhone: e.target.value}})} className="w-full p-2 border" /></div>
+                                    <div><label className="text-xs font-bold text-gray-400">장애번호</label><input type="text" value={settings.footer.faultPhone} onChange={e => setSettings({...settings, footer: {...settings.footer, faultPhone: e.target.value}})} className="w-full p-2 border" /></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {tab === 'consultations' && (
+                            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 border-b text-gray-400 font-bold uppercase">
+                                        <tr>
+                                            <th className="p-4">신청일시</th>
+                                            <th className="p-4">매장명</th>
+                                            <th className="p-4">고객성함</th>
+                                            <th className="p-4">연락처</th>
+                                            <th className="p-4">관심품목</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        {consultations.length > 0 ? consultations.map(c => (
+                                            <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="p-4 text-xs font-mono text-gray-400">{c.createdAt}</td>
+                                                <td className="p-4 font-bold">{c.storeName}</td>
+                                                <td className="p-4">{c.customerName}</td>
+                                                <td className="p-4 font-mono">{c.phoneNumber}</td>
+                                                <td className="p-4">
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {c.interests.map(i => <span key={i} className="px-1.5 py-0.5 bg-ktRed/5 text-ktRed text-[10px] font-bold rounded border border-ktRed/10">{i}</span>)}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={5} className="p-20 text-center text-gray-400">상담 내역이 없습니다.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {tab === 'integration' && (
+                            <div className="space-y-8 max-w-3xl">
+                                <div className="bg-white p-8 rounded-2xl border shadow-sm">
+                                    <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><i className="fa-solid fa-bolt text-yellow-500"></i> 외부 연동 설정 (Webhook)</h3>
+                                    <div className="space-y-4">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase">Google Apps Script Web App URL</label>
+                                        <input type="text" value={settings.webhookUrl} onChange={e => setSettings({...settings, webhookUrl: e.target.value})} className="w-full p-4 border rounded-xl font-mono text-sm bg-gray-50" placeholder="https://script.google.com/macros/s/.../exec" />
+                                        <p className="text-xs text-gray-500">신청 시 구글 시트 및 이메일 전송을 위한 API 주소를 입력하세요.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-blue-50 p-8 rounded-2xl border border-blue-100 text-sm text-blue-900">
+                                    <h4 className="font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-circle-info"></i> 구글 시트/메일 연동 가이드</h4>
+                                    <ol className="list-decimal ml-4 space-y-3 leading-relaxed">
+                                        <li>구글 시트를 생성하고 <b>확장 프로그램 &gt; Apps Script</b>를 엽니다.</li>
+                                        <li>아래 코드를 복사하여 붙여넣고 <b>배포 &gt; 새 배포 (웹 앱)</b>를 실행합니다.</li>
+                                        <li>액세스 권한을 "모든 사람(Anyone)"으로 설정하고 URL을 위 필드에 입력하세요.</li>
+                                    </ol>
+                                    <pre className="mt-6 p-4 bg-white/50 rounded-lg text-[10px] font-mono border overflow-x-auto">
+{`function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([new Date(), data.storeName, data.customerName, data.phoneNumber, data.interests.join(", ")]);
+  
+  // 메일 알림 (선택 사항)
+  MailApp.sendEmail({
+    to: "본인이메일@gmail.com",
+    subject: "[상담신청] " + data.storeName,
+    body: "매장: " + data.storeName + "\\n성함: " + data.customerName + "\\n번호: " + data.phoneNumber
+  });
+  
+  return ContentService.createTextOutput("OK");
+}`}
+                                    </pre>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Modals for News/Products */}
+                    {editNews && (
+                        <div className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                            <form onSubmit={(e) => { 
+                                e.preventDefault(); 
+                                if (editNews.id) {
+                                    setNews(news.map(n => n.id === editNews.id ? editNews : n));
+                                } else {
+                                    setNews([{...editNews, id: Date.now().toString(), date: new Date().toISOString().split('T')[0]}, ...news]);
+                                }
+                                setEditNews(null); 
+                            }} className="bg-white p-10 rounded-3xl w-full max-w-xl shadow-2xl space-y-6">
+                                <h2 className="text-2xl font-black">{editNews.id ? '뉴스 수정' : '신규 뉴스 등록'}</h2>
+                                <input type="text" required placeholder="뉴스 제목" value={editNews.title || ''} onChange={e => setEditNews({...editNews, title: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-ktRed" />
+                                <textarea required placeholder="뉴스 내용" rows={6} value={editNews.content || ''} onChange={e => setEditNews({...editNews, content: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-ktRed" />
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400">대표 이미지 업로드</label>
+                                    <input type="file" onChange={e => handleFile(e, u => setEditNews({...editNews, imageUrl: u}))} className="text-xs" />
+                                </div>
+                                <div className="flex gap-4 pt-4">
+                                    <button type="submit" className="flex-grow bg-ktRed text-white p-4 rounded-xl font-bold shadow-lg">저장</button>
+                                    <button type="button" onClick={() => setEditNews(null)} className="px-8 bg-gray-100 p-4 rounded-xl font-bold">취소</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {editProd && (
+                        <div className="fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                            <form onSubmit={(e) => { 
+                                e.preventDefault(); 
+                                if (editProd.id) {
+                                    setProducts(products.map(p => p.id === editProd.id ? editProd : p));
+                                } else {
+                                    setProducts([...products, {...editProd, id: Date.now().toString()}]);
+                                }
+                                setEditProd(null); 
+                            }} className="bg-white p-10 rounded-3xl w-full max-w-xl shadow-2xl space-y-6 overflow-y-auto max-h-[90vh]">
+                                <h2 className="text-2xl font-black">상품 정보 설정</h2>
+                                <input type="text" required placeholder="상품명" value={editProd.name || ''} onChange={e => setEditProd({...editProd, name: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl focus:ring-2 focus:ring-ktRed" />
+                                <textarea placeholder="상세 설명" rows={3} value={editProd.description || ''} onChange={e => setEditProd({...editProd, description: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl" />
+                                <input type="text" placeholder="아이콘 클래스 (예: fa-solid fa-robot)" value={editProd.icon || ''} onChange={e => setEditProd({...editProd, icon: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl" />
+                                <input type="text" placeholder="연결 링크 (예: #consultation)" value={editProd.linkUrl || ''} onChange={e => setEditProd({...editProd, linkUrl: e.target.value})} className="w-full p-4 bg-gray-50 border-0 rounded-xl" />
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400">상품 이미지 업로드</label>
+                                    <input type="file" onChange={e => handleFile(e, u => setEditProd({...editProd, image: u}))} className="text-xs" />
+                                </div>
+                                <div className="flex gap-4 pt-4">
+                                    <button type="submit" className="flex-grow bg-ktRed text-white p-4 rounded-xl font-bold shadow-lg">상품 저장</button>
+                                    <button type="button" onClick={() => setEditProd(null)} className="px-8 bg-gray-100 p-4 rounded-xl font-bold">취소</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- MAIN APP ---
+        const App = () => {
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [showAdminLogin, setShowAdminLogin] = useState(false);
+            const [showSuccess, setShowSuccess] = useState(false);
+            const [settings, setSettings] = useState(() => JSON.parse(localStorage.getItem('site_settings')) || INITIAL_SETTINGS);
+            const [news, setNews] = useState(() => JSON.parse(localStorage.getItem('site_news')) || INITIAL_NEWS);
+            const [products, setProducts] = useState(() => JSON.parse(localStorage.getItem('site_products')) || INITIAL_PRODUCTS);
+            const [consultations, setConsultations] = useState(() => JSON.parse(localStorage.getItem('site_consultations')) || []);
+
+            useEffect(() => { localStorage.setItem('site_settings', JSON.stringify(settings)); }, [settings]);
+            useEffect(() => { localStorage.setItem('site_news', JSON.stringify(news)); }, [news]);
+            useEffect(() => { localStorage.setItem('site_products', JSON.stringify(products)); }, [products]);
+            useEffect(() => { localStorage.setItem('site_consultations', JSON.stringify(consultations)); }, [consultations]);
+
+            const handleConsultation = async (data) => {
+                const entry = { ...data, id: Date.now().toString(), createdAt: new Date().toLocaleString() };
+                setConsultations([entry, ...consultations]);
+                if (settings.webhookUrl) {
+                    try { 
+                        await fetch(settings.webhookUrl, { 
+                            method: 'POST', 
+                            mode: 'no-cors', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(entry) 
+                        }); 
+                    } catch(e) { console.error('Webhook Error:', e); }
+                }
+                setShowSuccess(true);
+            };
+
+            const handleAdminAuth = (pass) => {
+                if (pass === '8999') {
+                    setIsAdmin(true);
+                    setShowAdminLogin(false);
+                } else {
+                    alert('비밀번호가 올바르지 않습니다.');
+                }
+            };
+
+            if (isAdmin) {
+                return (
+                    <AdminPanel 
+                        settings={settings} setSettings={setSettings} 
+                        news={news} setNews={setNews} 
+                        products={products} setProducts={setProducts} 
+                        consultations={consultations} 
+                        onLogout={() => setIsAdmin(false)} 
+                    />
+                );
+            }
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    <Navbar settings={settings} onAdminClick={() => setShowAdminLogin(true)} />
+                    <main className="flex-grow">
+                        <Hero settings={settings} />
+                        <div className="marquee-container">
+                            <div className="animate-marquee">
+                                {settings.announcement} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {settings.announcement}
+                            </div>
+                        </div>
+                        <ProductSection products={products} />
+                        <NewsSection news={news} />
+                        <ConsultationForm settings={settings} onSubmit={handleConsultation} />
+                    </main>
+                    <Footer settings={settings} />
+
+                    {showAdminLogin && (
+                        <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-white p-10 rounded-3xl w-full max-w-sm text-center shadow-2xl transform animate-in fade-in zoom-in duration-200">
+                                <div className="text-2xl font-black mb-2">관리자 접속</div>
+                                <p className="text-sm text-gray-500 mb-8">액세스 키를 입력해 주세요.</p>
+                                <input 
+                                    type="password" 
+                                    autoFocus 
+                                    placeholder="••••" 
+                                    onKeyDown={e => { if(e.key==='Enter') handleAdminAuth(e.target.value); }} 
+                                    className="w-full p-4 border-0 bg-gray-50 rounded-2xl text-center text-3xl tracking-[0.5em] mb-6 focus:ring-2 focus:ring-ktRed outline-none" 
+                                />
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={() => handleAdminAuth(document.querySelector('input[type="password"]').value)} className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-black transition-all">접속하기</button>
+                                    <button onClick={() => setShowAdminLogin(false)} className="text-gray-400 text-sm hover:text-gray-600 transition-colors">닫기</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {showSuccess && <SuccessModal onClose={() => setShowSuccess(false)} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
